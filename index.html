@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Masa hidup barangnya sarah</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #ffffff;
+        margin: 0;
+        padding: 0;
+        color: #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: row;
+        overflow: hidden;
+      }
+
+      .form-container,
+      .table-container {
+        box-sizing: border-box;
+        padding: 20px;
+      }
+
+      .form-container {
+        width: 30%;
+        min-width: 300px;
+        background-color: #ffffff;
+      }
+
+      .table-container {
+        width: 70%;
+        min-width: 300px;
+        overflow-x: auto;
+        background-color: #ffffff;
+      }
+
+      h1,
+      h2 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      label,
+      input,
+      button {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      input[type="text"],
+      input[type="date"] {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+
+      button {
+        padding: 10px;
+        background-color: #333;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      button:hover {
+        background-color: #555;
+      }
+
+      .table-search {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .search-input {
+        flex: 1;
+        margin-right: 10px;
+      }
+
+      .search-button {
+        flex: 0 0 100px;
+        padding: 10px;
+        background-color: #333;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .search-button:hover {
+        background-color: #555;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow-x: auto;
+      }
+
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+      }
+
+      th {
+        background-color: #333;
+        color: #fff;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+          padding-top: 70vh; /* Added padding to the top */
+        }
+
+        .form-container,
+        .table-container {
+          width: 100%;
+        }
+
+        .table-container {
+          margin-top: 20px;
+        }
+
+        .table-search {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .search-input,
+        .search-button {
+          width: 100%;
+          flex: 0 0 10px;
+          margin-bottom: 10px;
+        }
+
+        .search-button {
+          padding: 10px;
+        }
+
+        table {
+          font-size: 12px;
+          display: block;
+          width: 100%;
+          overflow-x: auto;
+        }
+
+        th,
+        td {
+          padding: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="form-container">
+        <h1>Masa hidup barangnya sarah</h1>
+        <form id="itemForm">
+          <label for="itemName">Nama Barang:</label>
+          <input type="text" id="itemName" required />
+
+          <label for="purchaseDate">Waktu Pembelian:</label>
+          <input type="date" id="purchaseDate" required />
+
+          <label for="expiredDate">Masa Kadaluarsa:</label>
+          <input type="date" id="expiredDate" required />
+
+          <button type="submit">Tambahkan Item</button>
+        </form>
+      </div>
+      <div class="table-container">
+        <h2>List Barang</h2>
+        <div class="table-search">
+          <input
+            type="text"
+            id="searchBox"
+            class="search-input"
+            placeholder="Search item..."
+          />
+          <button id="searchButton" class="search-button">Search</button>
+        </div>
+        <table id="itemTable">
+          <thead>
+            <tr>
+              <th>Nama Barang</th>
+              <th>Waktu Pembelian</th>
+              <th>Masa Kadaluarsa</th>
+              <th>Life Span (Hari)</th>
+              <th>Life Span (Bulan)</th>
+              <th>Life Span (Tahun)</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Items will be added here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const itemForm = document.getElementById("itemForm");
+        const itemTable = document
+          .getElementById("itemTable")
+          .getElementsByTagName("tbody")[0];
+        const searchBox = document.getElementById("searchBox");
+        const searchButton = document.getElementById("searchButton");
+
+        itemForm.addEventListener("submit", addItem);
+        searchButton.addEventListener("click", filterItems);
+
+        loadItems();
+
+        function addItem(e) {
+          e.preventDefault();
+
+          const itemName = document.getElementById("itemName").value;
+          const purchaseDate = new Date(
+            document.getElementById("purchaseDate").value
+          );
+          const expiredDate = new Date(
+            document.getElementById("expiredDate").value
+          );
+          const today = new Date();
+
+          const timeDiff = expiredDate - purchaseDate;
+
+          const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+          const months = Math.floor(days / 30);
+          const years = Math.floor(days / 365);
+
+          const item = {
+            itemName,
+            purchaseDate: purchaseDate.toISOString().split("T")[0],
+            expiredDate: expiredDate.toISOString().split("T")[0],
+            days: expiredDate < today ? "kadaluarsa" : days,
+            months: expiredDate < today ? "kadaluarsa" : months,
+            years: expiredDate < today ? "kadaluarsa" : years,
+          };
+
+          saveItem(item);
+          appendItemToTable(item);
+          itemForm.reset();
+        }
+
+        function saveItem(item) {
+          const items = getItems();
+          items.push(item);
+          localStorage.setItem("items", JSON.stringify(items));
+        }
+
+        function getItems() {
+          return localStorage.getItem("items")
+            ? JSON.parse(localStorage.getItem("items"))
+            : [];
+        }
+
+        function loadItems() {
+          const items = getItems();
+          items.forEach((item) => appendItemToTable(item));
+        }
+
+        function appendItemToTable(item) {
+          const newRow = itemTable.insertRow();
+
+          newRow
+            .insertCell(0)
+            .appendChild(document.createTextNode(item.itemName));
+          newRow
+            .insertCell(1)
+            .appendChild(document.createTextNode(item.purchaseDate));
+          newRow
+            .insertCell(2)
+            .appendChild(document.createTextNode(item.expiredDate));
+          newRow.insertCell(3).appendChild(document.createTextNode(item.days));
+          newRow
+            .insertCell(4)
+            .appendChild(document.createTextNode(item.months));
+          newRow.insertCell(5).appendChild(document.createTextNode(item.years));
+
+          const actionsCell = newRow.insertCell(6);
+          const deleteButton = document.createElement("button");
+          deleteButton.textContent = "Delete";
+          deleteButton.className = "delete-btn";
+          deleteButton.addEventListener("click", function () {
+            itemTable.deleteRow(newRow.rowIndex - 1);
+            removeItem(item);
+          });
+          actionsCell.appendChild(deleteButton);
+        }
+
+        function removeItem(item) {
+          let items = getItems();
+          items = items.filter(
+            (i) =>
+              i.itemName !== item.itemName ||
+              i.purchaseDate !== item.purchaseDate
+          );
+          localStorage.setItem("items", JSON.stringify(items));
+        }
+
+        function filterItems() {
+          const searchTerm = searchBox.value.toLowerCase();
+          const rows = itemTable.getElementsByTagName("tr");
+
+          for (let i = 0; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName("td");
+            let match = false;
+
+            for (let j = 0; j < cells.length - 1; j++) {
+              // Exclude action cell from search
+              if (cells[j].textContent.toLowerCase().includes(searchTerm)) {
+                match = true;
+                break;
+              }
+            }
+
+            rows[i].style.display = match ? "" : "none";
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
